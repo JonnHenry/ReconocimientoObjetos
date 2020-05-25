@@ -1,0 +1,5 @@
+https://hetpro-store.com/TUTORIALES/opencv-findcontours/
+https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_watershed/py_watershed.html
+https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_gui/py_video_display/py_video_display.html
+https://omes-va.com/detectando-figuras-geometricas-con-opencv-python/
+https://www.it-swarm.dev/es/python/python-opencv-deteccion-de-blob-o-deteccion-de-circulo/829925362/

@@ -5,6 +5,7 @@ import math
 
 #rutaArchivo: Si no se desea el reconocimiento de objetos con un video ya hecho, se pone la ruta en ""
 #reconocimientoCamara: Si es True se reconoce con la camara
+#grabarVideo: Es un parametro de tipo Boolean
 #listaReconocer: Este es un parametro que es una lista los valores que se utilizan son 
 # triangulo
 # cuadrado
@@ -22,7 +23,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
     centroCirculo = []
     cantCentros = 0
     pasoDiferencial = 15
-    fourcc = cv2.VideoWriter_fourcc('F','M','P','4')
+    fourcc = cv2.VideoWriter_fourcc(*"MJPG")
     
     if (reconocimientoCamara):
         capturaVideo=cv2.VideoCapture(0)
@@ -31,7 +32,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
         
 
     time.sleep(2.0)
-    out = cv2.VideoWriter('videoGrabado.avi', fourcc, 20.0, (int(capturaVideo.get(3)),int(capturaVideo.get(4))))
+    grabar = cv2.VideoWriter('videoGrabado.avi', fourcc, 30.0, (int(capturaVideo.get(3)),int(capturaVideo.get(4))))
     
     while(True):
         continuaVideo, videoOriginal = capturaVideo.read()
@@ -76,7 +77,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                     centroTriangulo.append(centro)
                     cantCentros = len(centroTriangulo)-1
                     if (cantCentros>pasoDiferencial):
-                        cv2.putText(frameCopia,'Dx:'+str(centroTriangulo[cantCentros][0]-centroTriangulo[cantCentros -pasoDiferencial][0])+' Dy:'+str(centroTriangulo[cantCentros][1]-centroTriangulo[cantCentros-pasoDiferencial][1]), (x,y+5),1,1.5,(0,0,255),2)
+                        cv2.putText(frameCopia,'Dx:'+str(centroTriangulo[cantCentros][0]-centroTriangulo[cantCentros -pasoDiferencial][0])+' Dy:'+str(centroTriangulo[cantCentros][1]-centroTriangulo[cantCentros-pasoDiferencial][1]), (x,y+15),1,1.5,(0,0,255),2)
 
                 #Para un cuadrado 
                 if (len(aproximacion)==4):
@@ -89,7 +90,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                         centroCuadrado.append(centro)
                         cantCentros = len(centroCuadrado) -1 
                         if (cantCentros>pasoDiferencial):
-                            cv2.putText(frameCopia,'Dx:'+str(centroCuadrado[cantCentros][0]-centroCuadrado[cantCentros -pasoDiferencial][0])+' Dy:'+str(centroCuadrado[cantCentros][1]-centroCuadrado[cantCentros-pasoDiferencial][1]), (x,y+5),1,1.5,(0,0,255),2)
+                            cv2.putText(frameCopia,'Dx:'+str(centroCuadrado[cantCentros][0]-centroCuadrado[cantCentros -pasoDiferencial][0])+' Dy:'+str(centroCuadrado[cantCentros][1]-centroCuadrado[cantCentros-pasoDiferencial][1]), (x,y+15),1,1.5,(0,0,255),2)
                            
                     if (relacionAspecto!=1 and 'rectangulo' in listaReconocer):
 
@@ -100,10 +101,10 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                         centroRectangulo.append(centro)
                         cantCentros = len(centroRectangulo)-1
                         if (cantCentros>pasoDiferencial):
-                            cv2.putText(frameCopia,'Dx:'+str(centroRectangulo[cantCentros][0]-centroRectangulo[cantCentros -pasoDiferencial][0])+' Dy:'+str(centroRectangulo[cantCentros][1]-centroRectangulo[cantCentros-pasoDiferencial][1]), (x,y+5),1,1.5,(0,0,255),2)
+                            cv2.putText(frameCopia,'Dx:'+str(centroRectangulo[cantCentros][0]-centroRectangulo[cantCentros -pasoDiferencial][0])+' Dy:'+str(centroRectangulo[cantCentros][1]-centroRectangulo[cantCentros-pasoDiferencial][1]), (x,y+15),1,1.5,(0,0,255),2)
                             
 
-                if (len(aproximacion)>5 and 'circulo' in listaReconocer):                  
+                if (len(aproximacion)>10 and 'circulo' in listaReconocer):                  
                     perimetro = cv2.arcLength(contorno, True)
                     if perimetro != 0:
                         circularidad = 4*math.pi*(areaContorno/(perimetro*perimetro))
@@ -115,20 +116,23 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                             centroCirculo.append(centro)
                             cantCentros = len(centroCirculo)-1
                             if (cantCentros>pasoDiferencial):
-                                cv2.putText(frameCopia,'Dx:'+str(centroCirculo[cantCentros][0]-centroCirculo[cantCentros -pasoDiferencial][0])+' Dy:'+str(centroCirculo[cantCentros][1]-centroCirculo[cantCentros-pasoDiferencial][1]), (x,y+5),1,1.5,(0,255,0),2)
+                                cv2.putText(frameCopia,'Dx:'+str(centroCirculo[cantCentros][0]-centroCirculo[cantCentros -pasoDiferencial][0])+' Dy:'+str(centroCirculo[cantCentros][1]-centroCirculo[cantCentros-pasoDiferencial][1]), (x,y+15),1,1.5,(0,0,255),2)
+
+            if (grabarVideo):
+                grabar.write(frameCopia)
 
             cv2.imshow("Reconocimiento", frameCopia)
 
-        tecla = cv2.waitKey(20)
+            
+
+        tecla = cv2.waitKey(1)
         #Esc key para detenerse Esc==27
         if (tecla == 27):
-            if (grabarVideo):
-                out.write(frameCopia)
-
             break
 
     #Se libera el objeto que estaba capturando el video
     capturaVideo.release()
+    grabar.release()
 
     #Se cierra todas las ventanas
     cv2.destroyAllWindows()
