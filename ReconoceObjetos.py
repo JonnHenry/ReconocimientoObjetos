@@ -107,7 +107,6 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                     perimetro = cv2.arcLength(contorno, True)
                     if perimetro != 0:
                         circularidad = 4*math.pi*(areaContorno/(perimetro*perimetro))
-                        print(circularidad)
                         if 0.7 < circularidad < 1.2:
                             cv2.drawContours(frameCopia,[aproximacion],-1,(255,0,0),cv2.LINE_AA)    
                             cv2.putText(frameCopia,'Circulo', (x,y-5),1,1.5,(0,255,0),2)      
