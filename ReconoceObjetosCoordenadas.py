@@ -23,7 +23,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
     centroCirculo = []
     cantCentros = 0
     pasoDiferencial = 10
-    fourcc = cv2.VideoWriter_fourcc(*"XVID")
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
     
     if (reconocimientoCamara):
         capturaVideo=cv2.VideoCapture(0)
@@ -32,7 +32,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
         
 
     time.sleep(2.0)
-    grabar = cv2.VideoWriter('videoGrabado.avi', fourcc, 40, (int(capturaVideo.get(3)),int(capturaVideo.get(4))))
+    grabar = cv2.VideoWriter('videoGrabado.avi', fourcc, 200, (int(capturaVideo.get(3)),int(capturaVideo.get(4))))
     
     while(True):
         continuaVideo, videoOriginal = capturaVideo.read()
@@ -78,7 +78,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                     cantCentros = len(centroTriangulo)-1
                     if (cantCentros>pasoDiferencial and (centroTriangulo[cantCentros][0]-centroTriangulo[cantCentros-pasoDiferencial][0]!=0 or centroTriangulo[cantCentros][1]-centroTriangulo[cantCentros-pasoDiferencial][1]!=0 )):
                         cv2.putText(frameCopia,'x:'+str(centroTriangulo[cantCentros][0])+' y:'+str(centroTriangulo[cantCentros][1]), (x,y+15),1,1.5,(0,0,255),2)
-                        continue
+                        
 
                 #Para un cuadrado 
                 if (len(aproximacion)==4):
@@ -92,7 +92,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                         cantCentros = len(centroCuadrado) -1 
                         if (cantCentros>pasoDiferencial and (centroCuadrado[cantCentros][0]-centroCuadrado[cantCentros-pasoDiferencial][0]!=0 or centroCuadrado[cantCentros][1]-centroCuadrado[cantCentros-pasoDiferencial][1]!=0)):
                             cv2.putText(frameCopia,'x:'+str(centroCuadrado[cantCentros][0])+' y:'+str(centroCuadrado[cantCentros][1]), (x,y+15),1,1.5,(0,0,255),2)
-                            continue
+                            
 
                     if (relacionAspecto!=1 and 'rectangulo' in listaReconocer):
 
@@ -104,7 +104,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                         cantCentros = len(centroRectangulo)-1
                         if (cantCentros>pasoDiferencial and (centroRectangulo[cantCentros][0]-centroRectangulo[cantCentros-pasoDiferencial][0]!=0 or centroRectangulo[cantCentros][1]-centroRectangulo[cantCentros-pasoDiferencial][1]!=0 )):
                             cv2.putText(frameCopia,'x:'+str(centroRectangulo[cantCentros][0])+' y:'+str(centroRectangulo[cantCentros][1]), (x,y+15),1,1.5,(0,0,255),2)
-                            continue
+                            
 
                 if (len(aproximacion)>10 and 'circulo' in listaReconocer):                  
                     perimetro = cv2.arcLength(contorno, True)
@@ -120,15 +120,14 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                             
                             if (cantCentros>=pasoDiferencial and (centroCirculo[cantCentros][0]-centroCirculo[cantCentros-pasoDiferencial][0]!=0 or centroCirculo[cantCentros][1]-centroCirculo[cantCentros-pasoDiferencial][1]!=0 ) ):
                                 cv2.putText(frameCopia,'x:'+str(centroCirculo[cantCentros][0])+' y:'+str(centroCirculo[cantCentros][1]), (x,y+15),1,1.5,(0,0,255),2)
-                                continue
+                                
 
             if (grabarVideo):
                 grabar.write(frameCopia)
 
             cv2.imshow("Reconocimiento", frameCopia)
 
-            
-
+        
         tecla = cv2.waitKey(10)
         #Esc key para detenerse Esc==27
         if (tecla == 27):
