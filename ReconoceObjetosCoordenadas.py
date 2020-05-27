@@ -25,7 +25,6 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
     contRectangulo = 0
     contCirculo = 0
     contCuadrado = 0
-    cantCentros = 0
     pasoDiferencial = 10
     codec = cv2.VideoWriter_fourcc(*'XVID')
     
@@ -38,7 +37,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
     capturaVideo.set(4, 480)
 
     time.sleep(2.0)
-    grabar = cv2.VideoWriter('videoGrabado.avi', codec, 120, (640, 480))
+    grabar = cv2.VideoWriter('videoGrabado.avi', codec, 40, (640, 480))
     
     while(True):
         continuaVideo, videoOriginal = capturaVideo.read()
@@ -78,8 +77,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                     cv2.putText(frameCopia,'Triangulo', (x,y-5),1,1.5,(0,255,0),2)      
                     cv2.circle(frameCopia,centro, 3, (0,0,255), -1)
 
-                    cantCentros = len(centroTriangulo)-1
-                    if (cantCentros>=0 and (centroTriangulo[0][0]-centro[0]!=0 or centroTriangulo[0][1]-centro[1]!=0 )):
+                    if (centroTriangulo[0][0]-centro[0]!=0 or centroTriangulo[0][1]-centro[1]!=0 ):
                         cv2.putText(frameCopia,'x:'+str(centro[0])+' y:'+str(centro[1]), (x,y+15),1,1.5,(0,0,255),2)
                     
                     if contTriangulo % pasoDiferencial == 0:
@@ -94,9 +92,8 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                         cv2.drawContours(frameCopia,[aproximacion],-1,(255,0,0),cv2.LINE_AA)    
                         cv2.putText(frameCopia,'Cuadrado', (x,y-5),1,1.5,(0,255,0),2)      
                         cv2.circle(frameCopia,centro, 3, (0,0,255), -1)
-                        
-                        cantCentros = len(centroCuadrado) -1 
-                        if (cantCentros>=0 and (centroCuadrado[0][0]-centro[0]!=0 or centroCuadrado[0][1]-centro[1]!=0)):
+                         
+                        if (centroCuadrado[0][0]-centro[0]!=0 or centroCuadrado[0][1]-centro[1]!=0):
                             cv2.putText(frameCopia,'x:'+str(centro[0])+' y:'+str(centro[1]), (x,y+15),1,1.5,(0,0,255),2)
                             
                         if contCuadrado % pasoDiferencial == 0:
@@ -110,8 +107,7 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                         cv2.putText(frameCopia,'Rectangulo', (x,y-5),1,1.5,(0,255,0),2)      
                         cv2.circle(frameCopia,centro, 3, (0,0,255), -1)
 
-                        cantCentros = len(centroRectangulo)-1
-                        if (cantCentros>=0 and (centroRectangulo[0][0]-centro[0]!=0 or centroRectangulo[0][1]-centro[1]!=0)):
+                        if (centroRectangulo[0][0]-centro[0]!=0 or centroRectangulo[0][1]-centro[1]!=0):
                             cv2.putText(frameCopia,'x:'+str(centro[0])+' y:'+str(centro[1]), (x,y+15),1,1.5,(0,0,255),2)
 
                         if contRectangulo % pasoDiferencial == 0:
@@ -127,9 +123,8 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
                             cv2.drawContours(frameCopia,[aproximacion],-1,(255,0,0),cv2.LINE_AA)    
                             cv2.putText(frameCopia,'Circulo', (x,y-5),1,1.5,(0,255,0),2)      
                             cv2.circle(frameCopia,centro, 3, (0,0,255), -1)
-
-                            cantCentros = len(centroCirculo)-1                            
-                            if (cantCentros>=0 and (centroCirculo[0][0]-centro[0]!=0 or centroCirculo[0][1]-centro[1]!=0)):
+                          
+                            if (centroCirculo[0][0]-centro[0]!=0 or centroCirculo[0][1]-centro[1]!=0):
                                 cv2.putText(frameCopia,'x:'+str(centro[0])+' y:'+str(centro[1]), (x,y+15),1,1.5,(0,0,255),2)
                                 
                             if contCirculo % pasoDiferencial == 0:
@@ -156,5 +151,5 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
     cv2.destroyAllWindows()
 
 
-reconoceObjetos('figuras.mp4',['rectangulo', 'cuadrado','circulo'],False,False)
+reconoceObjetos('figuras.mp4',['rectangulo', 'cuadrado','circulo'],True,True)
 
