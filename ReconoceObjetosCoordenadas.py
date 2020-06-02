@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import time
 import math
-
+import os.path
+import cvui
 #rutaArchivo: Si no se desea el reconocimiento de objetos con un video ya hecho, se pone la ruta en ""
 #reconocimientoCamara: Si es True se reconoce con la camara
 #grabarVideo: Es un parametro de tipo Boolean
@@ -14,7 +15,7 @@ import math
 # Ejemplo: ['cuadrado','triangulo','circulo']
 # Si se desea reconocer todo se debe de utilizar todos los valores que se desea recononcer 
 
-def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo):
+def reconoceObjetos(rutaArchivo):
     capturaVideo = None
     centroTriangulo = [(0,0)]
     centroRectangulo = [(0,0)]
@@ -28,120 +29,178 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
     pasoDiferencial = 10
     codec = cv2.VideoWriter_fourcc(*'XVID')
     
-    if (reconocimientoCamara):
-        capturaVideo=cv2.VideoCapture(0)
-    else:
-        capturaVideo = cv2.VideoCapture(rutaArchivo)
+    #### M. MODIFICACIONES
+    nameRC = ['Grabar','Detener']
+    inameRC=0
+    iname=0
+    triangle = [True]
+    circle = [True]
+    rectangle=[True]
+    square=[True]
+    WINDOWS_NAME='Reconocimiento de Figuras Geometricas'
+    error=''
+    if not os.path.isfile(rutaArchivo):
+        error='El video no se encuentra en el directorio'
+    record = False
+    salir =0
+    tecla=0
+    ########
+    while 1:
+        name = 'WebCam' if iname%2 else 'Video'
+        if (name=='WebCam' and os.path.isfile(rutaArchivo)):
+            capturaVideo = cv2.VideoCapture(rutaArchivo)
+        else:
+            capturaVideo=cv2.VideoCapture(0)
+        capturaVideo.set(3,640)
+        capturaVideo.set(4, 480)
 
-    capturaVideo.set(3,640)
-    capturaVideo.set(4, 480)
-
-    time.sleep(2.0)
-    grabar = cv2.VideoWriter('videoGrabado.avi', codec, 40, (640, 480))
-    
-    while(True):
-        continuaVideo, videoOriginal = capturaVideo.read()
-        if continuaVideo == False:
-            break
-
-        frameCopia = videoOriginal.copy()
-
-        frameEscalaGrises = cv2.cvtColor(frameCopia,cv2.COLOR_BGR2GRAY)
-        frameEscalaGrises=cv2.GaussianBlur(frameEscalaGrises,(7,7),0)
-        #Se muestra el video a escala de grises
-        #cv2.imshow("Escala de Grises", frameEscalaGrises)
-
-        #Se detecta los bordes
-        bordesFrame = cv2.Canny(frameEscalaGrises, 50, 225)
-        bordesFrame = cv2.morphologyEx(bordesFrame, cv2.MORPH_CLOSE, np.ones((7, 7), np.uint8))
-        bordesFrame = cv2.dilate(bordesFrame, None, iterations=2)
-        bordesFrame = cv2.erode(bordesFrame, None, iterations=2)
+        time.sleep(2.0)
         
-        #cv2.imshow("Bordes del Video", bordesFrame)
+        ##### M. MODIFICACIONES
+        cvui.init(WINDOWS_NAME)
+        bandera=True
+        ##########
+        while(bandera):
+            continuaVideo, videoOriginal = capturaVideo.read()
+            if continuaVideo == False:
+                break
 
-        #Encuentra los contornos de los bordes en la imagen
-        contornos,_ = cv2.findContours(bordesFrame, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            frameCopia = videoOriginal.copy()
 
-        for contorno in contornos:
-            areaContorno = cv2.contourArea(contorno)
+            frameEscalaGrises = cv2.cvtColor(frameCopia,cv2.COLOR_BGR2GRAY)
+            frameEscalaGrises=cv2.GaussianBlur(frameEscalaGrises,(7,7),0)
+            #Se muestra el video a escala de grises
+            #cv2.imshow("Escala de Grises", frameEscalaGrises)
 
-            if areaContorno>2500:
-                epsilon = 0.01*cv2.arcLength(contorno,True)
-                aproximacion = cv2.approxPolyDP(contorno,epsilon,True)
-                x,y,w,h = cv2.boundingRect(aproximacion)
-                momento = cv2.moments(contorno)
-                centro = (int(momento["m10"] / momento["m00"]), int(momento["m01"] / momento["m00"]))
-                #Para el triangulo
-                if (len(aproximacion)==3 and 'triangulo' in listaReconocer):
-                    cv2.drawContours(frameCopia,[aproximacion],-1,(255,0,0),cv2.LINE_AA)    
-                    cv2.putText(frameCopia,'Triangulo', (x,y-5),1,1.5,(0,255,0),2)      
-                    cv2.circle(frameCopia,centro, 3, (0,0,255), -1)
 
-                    if (centroTriangulo[0][0]-centro[0]!=0 or centroTriangulo[0][1]-centro[1]!=0 ):
-                        cv2.putText(frameCopia,'x:'+str(centro[0])+' y:'+str(centro[1]), (x,y+15),1,1.5,(0,0,255),2)
-                    
-                    if contTriangulo % pasoDiferencial == 0:
-                        centroTriangulo[0]=centro
+            #Se detecta los bordes
+            bordesFrame = cv2.Canny(frameEscalaGrises, 50, 225)
+            bordesFrame = cv2.morphologyEx(bordesFrame, cv2.MORPH_CLOSE, np.ones((7, 7), np.uint8))
+            bordesFrame = cv2.dilate(bordesFrame, None, iterations=2)
+            bordesFrame = cv2.erode(bordesFrame, None, iterations=2)
+            
+            #cv2.imshow("Bordes del Video", bordesFrame)
 
-                    contTriangulo += 1
+            #Encuentra los contornos de los bordes en la imagen
+            contornos,_ = cv2.findContours(bordesFrame, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            ####### M. MODIFICACIONES
+            #Escala a una dimension menor los videos,
+            cannyscaler = cv2.resize(bordesFrame,None,fx=.5, fy=.5, interpolation = cv2.INTER_CUBIC)
+            grayscaler = cv2.resize(frameEscalaGrises,None,fx=.5, fy=.5, interpolation = cv2.INTER_CUBIC)
+            scaler = cv2.vconcat([grayscaler,cannyscaler])
 
-                #Para un cuadrado 
-                if (len(aproximacion)==4):
-                    relacionAspecto = int(w/h)
-                    if (relacionAspecto==1 and 'cuadrado' in listaReconocer):
+            #Interfaz 
+            cvui.text(frameCopia, 15,30,error,0.6,0xff0000)
+            cvui.window(frameCopia, 10, 50, 0, 180, 'Escoja la figura geometrica')
+            cvui.checkbox(frameCopia, 15, 80, 'Triangulo: ', triangle)
+            cvui.checkbox(frameCopia,15,110,'Cuadrado: ',square)
+            cvui.checkbox(frameCopia,15,140,'Rectangulo: ',rectangle)
+            cvui.checkbox(frameCopia,15,170,'Circulo',circle)
+            cvui.text(frameCopia,15,190,'Medio:')
+            #Transforma una imagen de 2D a 3D, para poder anadir a gray y canny al frame del video, 
+            
+            imgc = cv2.cvtColor(scaler,cv2.COLOR_GRAY2BGR)
+            #both = np.hstack((frameCopia,imgc))
+            # ######### Cambie la condicion de entrada ejm: triangulo in lista cambie a triangle[0]
+            # ya que ahi se encuentra el resultado del checkbox
+            for contorno in contornos:
+                areaContorno = cv2.contourArea(contorno)
+
+                if areaContorno>2500:
+                    epsilon = 0.01*cv2.arcLength(contorno,True)
+                    aproximacion = cv2.approxPolyDP(contorno,epsilon,True)
+                    x,y,w,h = cv2.boundingRect(aproximacion)
+                    momento = cv2.moments(contorno)
+                    centro = (int(momento["m10"] / momento["m00"]), int(momento["m01"] / momento["m00"]))
+                    #Para el triangulo
+                    if (len(aproximacion)==3 and triangle[0]):
                         cv2.drawContours(frameCopia,[aproximacion],-1,(255,0,0),cv2.LINE_AA)    
-                        cv2.putText(frameCopia,'Cuadrado', (x,y-5),1,1.5,(0,255,0),2)      
-                        cv2.circle(frameCopia,centro, 3, (0,0,255), -1)
-                         
-                        if (centroCuadrado[0][0]-centro[0]!=0 or centroCuadrado[0][1]-centro[1]!=0):
-                            cv2.putText(frameCopia,'x:'+str(centro[0])+' y:'+str(centro[1]), (x,y+15),1,1.5,(0,0,255),2)
-                            
-                        if contCuadrado % pasoDiferencial == 0:
-                            centroCuadrado[0]=centro
-
-                        contCuadrado += 1
-
-                    if (relacionAspecto!=1 and 'rectangulo' in listaReconocer):
-
-                        cv2.drawContours(frameCopia,[aproximacion],-1,(255,0,0),cv2.LINE_AA)    
-                        cv2.putText(frameCopia,'Rectangulo', (x,y-5),1,1.5,(0,255,0),2)      
+                        cv2.putText(frameCopia,'Triangulo', (x,y-5),1,1.5,(0,255,0),2)      
                         cv2.circle(frameCopia,centro, 3, (0,0,255), -1)
 
-                        if (centroRectangulo[0][0]-centro[0]!=0 or centroRectangulo[0][1]-centro[1]!=0):
+                        if (centroTriangulo[0][0]-centro[0]!=0 or centroTriangulo[0][1]-centro[1]!=0 ):
                             cv2.putText(frameCopia,'x:'+str(centro[0])+' y:'+str(centro[1]), (x,y+15),1,1.5,(0,0,255),2)
+                        
+                        if contTriangulo % pasoDiferencial == 0:
+                            centroTriangulo[0]=centro
 
-                        if contRectangulo % pasoDiferencial == 0:
-                            centroRectangulo[0]=centro
+                        contTriangulo += 1
+                        
 
-                        contRectangulo += 1   
-
-                if (len(aproximacion)>10 and 'circulo' in listaReconocer):                  
-                    perimetro = cv2.arcLength(contorno, True)
-                    if perimetro != 0:
-                        circularidad = 4*math.pi*(areaContorno/(perimetro*perimetro))
-                        if 0.85 < circularidad < 1.2:
+                    #Para un cuadrado 
+                    elif (len(aproximacion)==4):
+                        relacionAspecto = 1 if .8<(w/h) and (w/h)<1.1 else 0
+                        if (relacionAspecto==1 and square[0]):
                             cv2.drawContours(frameCopia,[aproximacion],-1,(255,0,0),cv2.LINE_AA)    
-                            cv2.putText(frameCopia,'Circulo', (x,y-5),1,1.5,(0,255,0),2)      
+                            cv2.putText(frameCopia,'Cuadrado', (x,y-5),1,1.5,(0,255,0),2)      
                             cv2.circle(frameCopia,centro, 3, (0,0,255), -1)
-                          
-                            if (centroCirculo[0][0]-centro[0]!=0 or centroCirculo[0][1]-centro[1]!=0):
+                            
+                            if (centroCuadrado[0][0]-centro[0]!=0 or centroCuadrado[0][1]-centro[1]!=0):
                                 cv2.putText(frameCopia,'x:'+str(centro[0])+' y:'+str(centro[1]), (x,y+15),1,1.5,(0,0,255),2)
                                 
-                            if contCirculo % pasoDiferencial == 0:
-                                centroCirculo[0]=centro
+                            if contCuadrado % pasoDiferencial == 0:
+                                centroCuadrado[0]=centro
 
-                            contCirculo += 1
+                            contCuadrado += 1
 
-            if (grabarVideo):
-                grabar.write(frameCopia)
+                        if (relacionAspecto!=1 and rectangle[0]):
 
-            cv2.imshow("Reconocimiento", frameCopia)
+                            cv2.drawContours(frameCopia,[aproximacion],-1,(255,0,0),cv2.LINE_AA)    
+                            cv2.putText(frameCopia,'Rectangulo', (x,y-5),1,1.5,(0,255,0),2)      
+                            cv2.circle(frameCopia,centro, 3, (0,0,255), -1)
 
-        
-        tecla = cv2.waitKey(10)
-        #Esc key para detenerse Esc==27
-        if (tecla == 27):
-            break
+                            if (centroRectangulo[0][0]-centro[0]!=0 or centroRectangulo[0][1]-centro[1]!=0):
+                                cv2.putText(frameCopia,'x:'+str(centro[0])+' y:'+str(centro[1]), (x,y+15),1,1.5,(0,0,255),2)
+
+                            if contRectangulo % pasoDiferencial == 0:
+                                centroRectangulo[0]=centro
+
+                            contRectangulo += 1   
+
+                    else: 
+                        if (len(aproximacion)>10 and circle[0]):                  
+                            perimetro = cv2.arcLength(contorno, True)
+                            if perimetro != 0:
+                                circularidad = 4*math.pi*(areaContorno/(perimetro*perimetro))
+                                if 0.85 < circularidad < 1.2:
+                                    cv2.drawContours(frameCopia,[aproximacion],-1,(255,0,0),cv2.LINE_AA)    
+                                    cv2.putText(frameCopia,'Circulo', (x,y-5),1,1.5,(0,255,0),2)      
+                                    cv2.circle(frameCopia,centro, 3, (0,0,255), -1)
+
+                                    if (centroCirculo[0][0]-centro[0]!=0 or centroCirculo[0][1]-centro[1]!=0):
+                                        cv2.putText(frameCopia,'x:'+str(centro[0])+' y:'+str(centro[1]), (x,y+15),1,1.5,(0,0,255),2)
+
+                                    if contCirculo % pasoDiferencial == 0:
+                                        centroCirculo[0]=centro
+
+                                    contCirculo += 1
+                both = np.hstack((frameCopia,imgc))
+                if cvui.button(frameCopia, 15, 210, name):
+                    iname+=1
+                    bandera=False
+                if cvui.button(frameCopia, 15, 242, nameRC[inameRC%2]):
+                    if not inameRC%2:
+                        print('Grabando....')
+                        grabar = cv2.VideoWriter('videoGrabado'+str(inameRC)+'.avi', codec, 220, (960, 480))
+                        record=True
+                    else:
+                        grabar.release()
+                    inameRC+=1
+                if record:
+                    grabar.write(both)
+                if cvui.button(frameCopia, 15, 274, "&Salir"):
+                    salir=1
+                cvui.update()
+                cv2.imshow(WINDOWS_NAME,both)
+                #cv2.imshow("Reconocimiento", frameCopia)
+                
+            
+            tecla = cv2.waitKey(10)
+            #Esc key para detenerse Esc==27
+            if (tecla == 27 or salir):
+                break
+        if (tecla == 27 or salir):
+                break
 
     #Se libera el objeto que estaba capturando el video
     capturaVideo.release()
@@ -151,5 +210,6 @@ def reconoceObjetos(rutaArchivo,listaReconocer,reconocimientoCamara, grabarVideo
     cv2.destroyAllWindows()
 
 
-reconoceObjetos('figuras.mp4',['rectangulo', 'cuadrado','circulo'],True,True)
+video =  input('Ingrese el nombre del video a reconocer: ')
+reconoceObjetos(video)
 
